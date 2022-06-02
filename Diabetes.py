@@ -7,7 +7,7 @@
 
 # ## Importing the required python libraries
 
-# In[36]:
+# In[150]:
 
 
 import pandas as pd
@@ -23,39 +23,39 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 
 
-# In[37]:
+# In[151]:
 
 
 ### read csv file
 df = pd.read_csv('diabetes.csv')
 
 
-# In[38]:
+# In[152]:
 
 
 df
 
 
-# In[39]:
+# In[153]:
 
 
 df.shape #checking the shape of the dataframe
 
 
-# In[40]:
+# In[154]:
 
 
 # gives information of the data types
 df.info
 
 
-# In[62]:
+# In[155]:
 
 
 df.isnull().sum() # checking if the dataframe has any null value or not 
 
 
-# In[41]:
+# In[156]:
 
 
 # basic statistic details about the data (note only numerical columns would be displayed here unless parameter 
@@ -63,7 +63,7 @@ df.isnull().sum() # checking if the dataframe has any null value or not
 df.describe()
 
 
-# In[42]:
+# In[157]:
 
 
 #print a graph for correlation
@@ -72,25 +72,25 @@ plt.title('Correlation between dataset variables')
 sb.heatmap(df.corr(), annot=True)
 
 
-# In[43]:
+# In[158]:
 
 
 df.Outcome.value_counts() # getting the number of classes in the target columns
 
 
-# In[44]:
+# In[159]:
 
 
 x = df.iloc[:,:-1] # features
 
 
-# In[45]:
+# In[160]:
 
 
 y = df.iloc[:,8] #target values
 
 
-# In[46]:
+# In[161]:
 
 
 np.bincount(y)
@@ -98,100 +98,117 @@ np.bincount(y)
 
 # ## Applying SVM on the dibetes dataFrame
 
-# In[47]:
-
-
-svm = SVC(kernel = 'rbf', gamma=100)
-svm.fit(x,y)
-
-
-# In[48]:
-
-
-pred = svm.predict(x)
-
-
-# ## So here we can see on class 1 out of 500 samples there is 0 missclassified samples and in class 2 samples out of 268 smaples there are 0 missclassified samples
-
-# In[49]:
-
-
-c1 = confusion_matrix(y,pred)
-c1
-
-
-# In[51]:
-
-
-np.bincount(y) # it returns the number of samples in each class
-
-
-#  ### So in SVM model we do not need to use class_weight in the SVM model
-
-# In[52]:
-
-
-recall_score(y,pred)
-
-
-# In[53]:
-
-
-precision_score(y,pred)
-
-
-# ## now testing the model
-
-# ### splitting test and train data
-
-# In[54]:
+# In[162]:
 
 
 xtrain,xtest,ytrain,ytest = train_test_split(x,y,test_size=.2,random_state=12)
 
 
-# In[55]:
+# In[163]:
 
 
-pred_train = svm.predict(xtrain)
+p = [{'kernel':['linear'],'C':[.01,1,10]},{'kernel':['rbf'],'gamma':[.001,.01,.1,10]}]
+clf = GridSearchCV(SVC(),param_grid=p,cv=5,scoring='accuracy')
+clf.fit(xtrain,ytrain)
 
 
-# In[56]:
+# In[164]:
 
 
-pred_train
+clf.best_score_ #getting the best model with the highest score
 
 
-# In[58]:
+# In[165]:
+
+
+clf.best_params_ # getting the best model with the best hyper parameters with the highest score
+
+
+# In[166]:
+
+
+clf1 = clf.best_estimator_ # saving the model with the best hyper parameter in the clf variable
+clf1
+
+
+# In[167]:
+
+
+pred = clf1.predict(xtest)
+
+
+# In[168]:
+
+
+from sklearn.metrics import accuracy_score
+accuracy_score(ytest,pred)
+
+
+# ## Plotting confusion matrix
+
+# In[169]:
+
+
+c1 = confusion_matrix(ytest,pred)
+c1
+
+
+# In[170]:
+
+
+np.bincount(ytest) # it returns the number of samples in each class
+
+
+# In[171]:
+
+
+recall_score(ytest,pred)
+
+
+# In[172]:
+
+
+precision_score(ytest,pred)
+
+
+# ## now testing the model
+
+# In[173]:
+
+
+pred_train = clf1.predict(xtrain)
+
+
+# In[174]:
 
 
 np.where(pred_train!=ytrain) #getting all the missclassified samples in train dataset
 
 
-# In[59]:
+# In[175]:
 
 
-pred_test = svm.predict(xtest)
+pred_test = clf1.predict(xtest)
 pred_test
 
 
-# In[60]:
+# In[176]:
 
 
 np.where(pred_test!=ytest) #getting all the missclassified samples in test dataset
 
 
-# ### as we can see here SVM model did not mis-classify any of the samples in the train and test dataset
+# ### Conclusion SVm model have the accuracy score of 81%
 
 # ## Now Applying Logistic Regression on Dibetes Dataframe
 
-# In[63]:
+# In[177]:
 
 
 x # x has all the features 
 
 
-# In[64]:
+# In[178]:
 
 
 y # y has all the values of the target columns
@@ -199,31 +216,31 @@ y # y has all the values of the target columns
 
 # ## Splitting data into train and test dataset
 
-# In[65]:
+# In[179]:
 
 
 xtrain,xtest,ytrain,ytest = train_test_split(x,y,test_size=.2,random_state=12)
 
 
-# In[66]:
+# In[180]:
 
 
 xtrain.shape
 
 
-# In[67]:
+# In[181]:
 
 
 xtest.shape
 
 
-# In[68]:
+# In[182]:
 
 
 ytrain.shape
 
 
-# In[69]:
+# In[183]:
 
 
 ytest.shape
@@ -231,14 +248,14 @@ ytest.shape
 
 # ### Transforming data using Feature Scaling (MinMaxScaler) OR Normalizing data using MinMax Scalar. It is very important to normalize data in the dataframe before feeding it to Logistic regression
 
-# In[70]:
+# In[184]:
 
 
 from sklearn.preprocessing import MinMaxScaler 
 minmax_scaler = MinMaxScaler() # initialization of minmaxScalar
 
 
-# In[71]:
+# In[185]:
 
 
 minmax_scaler_train = minmax_scaler.fit_transform(xtrain)
@@ -247,27 +264,27 @@ minmax_scaler_test = minmax_scaler.transform(xtest)
 
 # ### Use PCA ->It reduces dimension or Features with the minimum loss of information to reduce model training time and remove less important features in the dataset
 
-# In[72]:
+# In[186]:
 
 
 from sklearn.decomposition import PCA
 pca = PCA(n_components=.95)
 
 
-# In[73]:
+# In[187]:
 
 
 pca_train = pca.fit_transform(minmax_scaler_train)
 pca_test = pca.transform(minmax_scaler_test)
 
 
-# In[74]:
+# In[188]:
 
 
 pca_train.shape
 
 
-# In[75]:
+# In[189]:
 
 
 pca_test.shape
@@ -275,55 +292,57 @@ pca_test.shape
 
 # ### Now applying Logistic Regression
 
-# In[76]:
+# In[190]:
 
 
 from sklearn.linear_model import LogisticRegression
 log = LogisticRegression(multi_class='multinomial',max_iter=10000)
 
 
-# In[77]:
+# In[191]:
 
 
 log.fit(pca_train,ytrain)
 
 
-# In[78]:
+# In[192]:
 
 
 pred = log.predict(pca_test)
 pred
 
 
-# In[79]:
+# In[193]:
 
 
 ytest
 
 
-# In[80]:
+# In[194]:
 
 
 score = log.score(pca_test,ytest)
 score
 
 
+# ### Conclusion Logistic regression with PCA and minMaxScalar transformation gives accuracy score of 80%
+
 # ## Now what if we remove PCA and use Logistic regression directply after normalizing data using MinMax scalar
 
-# In[81]:
+# In[195]:
 
 
 log.fit(minmax_scaler_train,ytrain)
 
 
-# In[82]:
+# In[196]:
 
 
 pred = log.predict(minmax_scaler_test)
 pred
 
 
-# In[83]:
+# In[197]:
 
 
 score = log.score(minmax_scaler_test,ytest)
@@ -334,33 +353,33 @@ score
 
 # ### What if we use standar scalar instead of minMax Scalar
 
-# In[85]:
+# In[198]:
 
 
 from sklearn.preprocessing import StandardScaler
 std = StandardScaler()
 
 
-# In[86]:
+# In[199]:
 
 
 std_train = std.fit_transform(xtrain)
 std_test = std.transform(xtest)
 
 
-# In[87]:
+# In[200]:
 
 
 log.fit(std_train,ytrain)
 
 
-# In[88]:
+# In[201]:
 
 
 pred = log.predict(std_test)
 
 
-# In[89]:
+# In[202]:
 
 
 score = log.score(std_test,ytest)
@@ -371,35 +390,35 @@ score
 
 # ### what if we use Logistic regression directly without any normalization
 
-# In[90]:
+# In[203]:
 
 
 log.fit(xtrain,ytrain)
 
 
-# In[92]:
+# In[204]:
 
 
 pred = log.predict(xtest)
 
 
-# In[93]:
+# In[205]:
 
 
 score = log.score(xtest,ytest)
 
 
-# In[94]:
+# In[206]:
 
 
 score
 
 
-# ### Still no improvement in the model accuracy that means SVM has better accuracy than the Logistic Regression model so far
+# ### Still no improvement in the model accuracy even if we use Logistic regression directly
 
 # ## Now Applying Polynomial Regression on Dibetes Dataset
 
-# In[95]:
+# In[207]:
 
 
 # SimpleRegression => Simple Linear regression and multi Linear regression
@@ -410,7 +429,7 @@ score
 #It's function is to transform data
 
 
-# In[96]:
+# In[208]:
 
 
 from sklearn.preprocessing import PolynomialFeatures
@@ -418,47 +437,47 @@ poly = PolynomialFeatures(degree=2)
 poly_x_train = poly.fit_transform(xtrain) # Tranforming x (input data) OR here in this case train_input
 
 
-# In[97]:
+# In[209]:
 
 
 poly_x_train.shape
 
 
-# In[98]:
+# In[210]:
 
 
 from sklearn.linear_model import LinearRegression
 lr = LinearRegression() # Initializing Linear regression
 
 
-# In[99]:
+# In[211]:
 
 
 lr.fit(poly_x_train,ytrain) # training the Linear regression model after polynomial transformation of data
 
 
-# In[100]:
+# In[212]:
 
 
 from sklearn.metrics import r2_score,mean_squared_error #testing model accuracy
 pred_train = lr.predict(poly_x_train) # Running Predictions on train dataset
 
 
-# In[102]:
+# In[213]:
 
 
 score_train = r2_score(ytrain,pred_train) # scoring our Polynomial regression model
 score_train
 
 
-# In[103]:
+# In[214]:
 
 
 # Just like what we did with our training data we need to transform the test input 
 poly_x_test = poly.transform(xtest)
 
 
-# In[104]:
+# In[215]:
 
 
 pred_test = lr.predict(poly_x_test) #Running prediction on test dataset
@@ -470,32 +489,32 @@ score_test
 
 # ## Now applying Raw Linear Regression model on diebetes dataset
 
-# In[105]:
+# In[216]:
 
 
 lr.fit(xtrain,ytrain)
 
 
-# In[107]:
+# In[217]:
 
 
 predict_test = lr.predict(xtest)
 
 
-# In[110]:
+# In[218]:
 
 
 score_test = r2_score(ytest,predict_test)
 score_test
 
 
-# In[111]:
+# In[219]:
 
 
 predict_train = lr.predict(xtrain)
 
 
-# In[112]:
+# In[220]:
 
 
 score_train = r2_score(ytrain,predict_train)
@@ -504,7 +523,7 @@ score_train
 
 # ### Linear Regression Model is also not suitable for classifiying diebets patient in the diebetes dataset
 
-# ### Hence according to my analysis SVM and Logisitc Regression are the only two Machine Learning model with the descent score and can be used in the dibetes dataset. Among the two SVM Model worked the best in this senario
+# ### Hence according to my analysis SVM and Logisitc Regression are the only two Machine Learning model with the descent score of 81% and can be used in the dibetes dataset.
 
 # In[ ]:
 
